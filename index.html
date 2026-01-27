@@ -1,0 +1,129 @@
+<!--
+  Fitness 1RM Tracker - Single page app for tracking workout progress
+  Features: Google sign-in, 1RM calculator, workout logging, history display
+  Uses Firebase for auth and data sync across devices
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1RM Tracker</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Login Screen -->
+  <div id="login-screen" class="login-screen">
+    <div class="login-container">
+      <h1>1RM Tracker</h1>
+      <p>Track your lifts, calculate your max</p>
+      <button id="google-signin-btn" class="google-signin-btn">
+        <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+          <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
+          <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+          <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+        </svg>
+        Sign in with Google
+      </button>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div id="app" class="app hidden">
+    <!-- Header -->
+    <header class="header">
+      <h1>1RM Tracker</h1>
+      <div class="user-info">
+        <span id="user-name"></span>
+        <button id="logout-btn" class="logout-btn">Logout</button>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <!-- 1RM Calculator Section -->
+      <section class="card calculator-section">
+        <h2>Calculate 1RM</h2>
+        <div class="calculator-inputs">
+          <div class="input-group">
+            <label for="calc-weight">Weight</label>
+            <div class="input-with-unit">
+              <input type="number" id="calc-weight" placeholder="225" min="0" step="0.5">
+              <span class="unit">lbs</span>
+            </div>
+          </div>
+          <div class="input-group">
+            <label for="calc-reps">Reps</label>
+            <input type="number" id="calc-reps" placeholder="5" min="1" max="30">
+          </div>
+        </div>
+        <button id="calculate-btn" class="primary-btn">Calculate</button>
+        <div id="calc-result" class="calc-result hidden">
+          <span class="result-label">Estimated 1RM</span>
+          <span class="result-value" id="result-value">0</span>
+          <span class="result-unit">lbs</span>
+        </div>
+      </section>
+
+      <!-- Log Workout Section -->
+      <section class="card log-section">
+        <h2>Log Workout</h2>
+        <div class="log-inputs">
+          <div class="input-group">
+            <label for="exercise-select">Exercise</label>
+            <select id="exercise-select">
+              <option value="">Select exercise...</option>
+            </select>
+          </div>
+          <div class="input-row">
+            <div class="input-group">
+              <label for="log-weight">Weight</label>
+              <div class="input-with-unit">
+                <input type="number" id="log-weight" placeholder="225" min="0" step="0.5">
+                <span class="unit">lbs</span>
+              </div>
+            </div>
+            <div class="input-group">
+              <label for="log-reps">Reps</label>
+              <input type="number" id="log-reps" placeholder="5" min="1" max="100">
+            </div>
+          </div>
+        </div>
+        <button id="save-workout-btn" class="primary-btn">Save Workout</button>
+      </section>
+
+      <!-- Exercise Management Section -->
+      <section class="card exercises-section">
+        <h2>Manage Exercises</h2>
+        <div class="add-exercise">
+          <input type="text" id="new-exercise-input" placeholder="New exercise name...">
+          <button id="add-exercise-btn" class="secondary-btn">Add</button>
+        </div>
+        <ul id="exercise-list" class="exercise-list"></ul>
+      </section>
+
+      <!-- History Section -->
+      <section class="card history-section">
+        <h2>Workout History</h2>
+        <div class="history-filter">
+          <select id="history-filter">
+            <option value="all">All Exercises</option>
+          </select>
+        </div>
+        <div id="history-list" class="history-list">
+          <p class="empty-state">No workouts logged yet</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
