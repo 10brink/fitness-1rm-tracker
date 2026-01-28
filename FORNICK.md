@@ -45,22 +45,25 @@ Each user gets their own document with:
 - An array of their custom exercises
 - A subcollection of workout logs
 
-## The Math: Epley Formula
+## The Math: Rep-Optimized Formulas
 
-The app uses the **Epley formula** to estimate 1RM:
+Different rep ranges respond better to different formulas, so we use four:
 
-```
-1RM = weight × (1 + reps/30)
-```
+| Reps | Formula | Why |
+|------|---------|-----|
+| 1-5 | **Epley**: `weight × (1 + reps/30)` | Gold standard for strength work |
+| 6-10 | **Brzycki**: `weight × (36 / (37 - reps))` | More accurate in hypertrophy range |
+| 11-15 | **Lombardi**: `weight × (reps ^ 0.10)` | Better for moderate endurance |
+| 16-20 | **Mayhew**: `100 × weight / (52.2 + 41.9 × e^(-0.055 × reps))` | Handles high-rep sets |
+| 20+ | Capped at 20 | Beyond 20 reps, you're testing endurance not strength |
 
-Example: You bench 225 lbs for 5 reps
-- 1RM = 225 × (1 + 5/30)
-- 1RM = 225 × 1.167
-- 1RM = **262.5 lbs**
+**Example calculations:**
+- 225 lbs × 5 reps (Epley) = **262.5 lbs**
+- 185 lbs × 8 reps (Brzycki) = **229.7 lbs**
+- 135 lbs × 12 reps (Lombardi) = **173.5 lbs**
+- 95 lbs × 18 reps (Mayhew) = **139.2 lbs**
 
-Why Epley? It's simple, widely used, and reasonably accurate for 1-10 reps. Other formulas exist (Brzycki, Lombardi), but Epley is the gym standard.
-
-**Caveat**: These formulas get less accurate above 10 reps. A 20-rep set gives you endurance info, not max strength estimates. The app allows up to 30 reps but the sweet spot is 1-10.
+**Why multiple formulas?** Each was derived from studies on different training populations and rep ranges. Epley works great for powerlifters doing triples, but overestimates for someone doing sets of 15. By switching formulas based on reps, you get more accurate estimates across all training styles.
 
 ## File Structure
 

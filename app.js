@@ -1,7 +1,7 @@
 /*
   Fitness 1RM Tracker - App Logic
   Handles Firebase authentication, workout logging, and 1RM calculations
-  Uses Epley formula: weight × (1 + reps/30)
+  Uses rep-optimized formulas: Epley (1-5), Brzycki (6-10), Lombardi (11-15), Mayhew (16-20)
 */
 
 // Firebase configuration - Replace with your own config from Firebase Console
@@ -165,9 +165,25 @@ function calculateBestOneRMs() {
 // ============================================
 
 function calculateOneRM(weight, reps) {
-  // Epley formula: weight × (1 + reps/30)
-  if (reps === 1) return weight;
-  return weight * (1 + reps / 30);
+  // Different formulas optimized for different rep ranges
+  // Cap reps at 20 for high-rep sets
+  if (reps > 20) reps = 20;
+
+  if (reps === 1) {
+    return weight;
+  } else if (reps <= 5) {
+    // Epley formula: weight × (1 + reps/30)
+    return weight * (1 + reps / 30);
+  } else if (reps <= 10) {
+    // Brzycki formula: weight × (36 / (37 - reps))
+    return weight * (36 / (37 - reps));
+  } else if (reps <= 15) {
+    // Lombardi formula: weight × (reps ^ 0.10)
+    return weight * Math.pow(reps, 0.10);
+  } else {
+    // Mayhew formula: 100 × weight / (52.2 + 41.9 × e^(-0.055 × reps))
+    return (100 * weight) / (52.2 + 41.9 * Math.exp(-0.055 * reps));
+  }
 }
 
 calculateBtn.addEventListener('click', () => {
@@ -179,8 +195,8 @@ calculateBtn.addEventListener('click', () => {
     return;
   }
 
-  if (!reps || reps < 1 || reps > 30) {
-    alert('Please enter reps between 1 and 30');
+  if (!reps || reps < 1) {
+    alert('Please enter valid reps');
     return;
   }
 
