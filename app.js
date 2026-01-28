@@ -33,6 +33,7 @@ const calcResult = document.getElementById('calc-result');
 const resultValue = document.getElementById('result-value');
 
 const exerciseSelect = document.getElementById('exercise-select');
+const logSets = document.getElementById('log-sets');
 const logWeight = document.getElementById('log-weight');
 const logReps = document.getElementById('log-reps');
 const saveWorkoutBtn = document.getElementById('save-workout-btn');
@@ -219,6 +220,7 @@ calcReps.addEventListener('keypress', (e) => {
 
 saveWorkoutBtn.addEventListener('click', async () => {
   const exercise = exerciseSelect.value;
+  const sets = parseInt(logSets.value) || 1;
   const weight = parseFloat(logWeight.value);
   const reps = parseInt(logReps.value);
 
@@ -246,6 +248,7 @@ saveWorkoutBtn.addEventListener('click', async () => {
       .collection('logs')
       .add({
         exercise,
+        sets,
         weight,
         reps,
         calculatedOneRM,
@@ -256,6 +259,7 @@ saveWorkoutBtn.addEventListener('click', async () => {
     const newLog = {
       id: logRef.id,
       exercise,
+      sets,
       weight,
       reps,
       calculatedOneRM,
@@ -272,6 +276,7 @@ saveWorkoutBtn.addEventListener('click', async () => {
     renderHistory();
 
     // Clear inputs
+    logSets.value = '';
     logWeight.value = '';
     logReps.value = '';
 
@@ -430,7 +435,7 @@ function renderHistory() {
       <div class="history-item">
         <div class="exercise-info">
           <span class="exercise-name">${log.exercise}${isPR ? ' 🏆' : ''}</span>
-          <span class="workout-details">${log.weight} lbs × ${log.reps} reps</span>
+          <span class="workout-details">${log.sets || 1}×${log.reps} @ ${log.weight} lbs</span>
           <span class="date">${formatDate(log.date)}</span>
         </div>
         <div class="stats">

@@ -214,6 +214,10 @@ body {
   gap: 1rem;
 }
 
+.input-row-3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
 /* Buttons */
 .primary-btn {
   width: 100%;
@@ -462,6 +466,10 @@ body {
 
   .input-row {
     grid-template-columns: 1fr;
+  }
+
+  .input-row-3 {
+    grid-template-columns: 1fr 1fr 1fr;
   }
 
   .history-item {
