@@ -19,29 +19,33 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// DOM Elements
+// DOM Elements - Some may be null depending on which page we're on
 const loginScreen = document.getElementById('login-screen');
 const app = document.getElementById('app');
 const googleSigninBtn = document.getElementById('google-signin-btn');
 const logoutBtn = document.getElementById('logout-btn');
 const userName = document.getElementById('user-name');
 
+// Calculator elements (index.html only)
 const calcWeight = document.getElementById('calc-weight');
 const calcReps = document.getElementById('calc-reps');
 const calculateBtn = document.getElementById('calculate-btn');
 const calcResult = document.getElementById('calc-result');
 const resultValue = document.getElementById('result-value');
 
+// Workout logging elements (workout.html only)
 const exerciseSelect = document.getElementById('exercise-select');
 const logSets = document.getElementById('log-sets');
 const logWeight = document.getElementById('log-weight');
 const logReps = document.getElementById('log-reps');
 const saveWorkoutBtn = document.getElementById('save-workout-btn');
 
+// Exercise management elements (workout.html only)
 const newExerciseInput = document.getElementById('new-exercise-input');
 const addExerciseBtn = document.getElementById('add-exercise-btn');
 const exerciseList = document.getElementById('exercise-list');
 
+// History elements (both pages)
 const historyFilter = document.getElementById('history-filter');
 const historyList = document.getElementById('history-list');
 
@@ -92,10 +96,10 @@ function clearAppState() {
   userExercises = [];
   workoutLogs = [];
   bestOneRMs = {};
-  exerciseList.innerHTML = '';
-  exerciseSelect.innerHTML = '<option value="">Select exercise...</option>';
-  historyFilter.innerHTML = '<option value="all">All Exercises</option>';
-  historyList.innerHTML = '<p class="empty-state">No workouts logged yet</p>';
+  if (exerciseList) exerciseList.innerHTML = '';
+  if (exerciseSelect) exerciseSelect.innerHTML = '<option value="">Select exercise...</option>';
+  if (historyFilter) historyFilter.innerHTML = '<option value="all">All Exercises</option>';
+  if (historyList) historyList.innerHTML = '<p class="empty-state">No workouts logged yet</p>';
 }
 
 // ============================================
@@ -206,7 +210,7 @@ function calculateWeightFromOneRM(oneRM, reps) {
   }
 }
 
-calculateBtn.addEventListener('click', () => {
+if (calculateBtn) calculateBtn.addEventListener('click', () => {
   const weight = parseFloat(calcWeight.value);
   const reps = parseInt(calcReps.value);
 
@@ -228,10 +232,12 @@ calculateBtn.addEventListener('click', () => {
   const repMaxesContainer = document.getElementById('rep-maxes');
   repMaxesContainer.innerHTML = repCounts.map(repCount => {
     const repWeight = calculateWeightFromOneRM(oneRM, repCount);
+    const percentage = (repWeight / oneRM) * 100;
     return `
       <div class="rep-max-item">
         <span class="rep-count">${repCount} Rep Max</span>
         <span class="rep-weight">${repWeight.toFixed(1)} lbs</span>
+        <span class="rep-percent">${percentage.toFixed(0)}% of 1RM</span>
       </div>
     `;
   }).join('');
@@ -240,10 +246,10 @@ calculateBtn.addEventListener('click', () => {
 });
 
 // Also calculate on Enter key
-calcWeight.addEventListener('keypress', (e) => {
+if (calcWeight) calcWeight.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') calculateBtn.click();
 });
-calcReps.addEventListener('keypress', (e) => {
+if (calcReps) calcReps.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') calculateBtn.click();
 });
 
@@ -251,7 +257,7 @@ calcReps.addEventListener('keypress', (e) => {
 // Workout Logging
 // ============================================
 
-saveWorkoutBtn.addEventListener('click', async () => {
+if (saveWorkoutBtn) saveWorkoutBtn.addEventListener('click', async () => {
   const exercise = exerciseSelect.value;
   const sets = parseInt(logSets.value) || 1;
   const weight = parseFloat(logWeight.value);
@@ -341,6 +347,8 @@ async function saveExercises() {
 }
 
 function renderExercises() {
+  if (!exerciseList) return;
+
   exerciseList.innerHTML = '';
 
   userExercises.forEach(exercise => {
@@ -359,26 +367,30 @@ function renderExercises() {
 }
 
 function updateExerciseDropdowns() {
-  // Update exercise select dropdown
-  exerciseSelect.innerHTML = '<option value="">Select exercise...</option>';
-  userExercises.forEach(exercise => {
-    const option = document.createElement('option');
-    option.value = exercise;
-    option.textContent = exercise;
-    exerciseSelect.appendChild(option);
-  });
+  // Update exercise select dropdown (workout.html only)
+  if (exerciseSelect) {
+    exerciseSelect.innerHTML = '<option value="">Select exercise...</option>';
+    userExercises.forEach(exercise => {
+      const option = document.createElement('option');
+      option.value = exercise;
+      option.textContent = exercise;
+      exerciseSelect.appendChild(option);
+    });
+  }
 
-  // Update history filter dropdown
-  historyFilter.innerHTML = '<option value="all">All Exercises</option>';
-  userExercises.forEach(exercise => {
-    const option = document.createElement('option');
-    option.value = exercise;
-    option.textContent = exercise;
-    historyFilter.appendChild(option);
-  });
+  // Update history filter dropdown (both pages)
+  if (historyFilter) {
+    historyFilter.innerHTML = '<option value="all">All Exercises</option>';
+    userExercises.forEach(exercise => {
+      const option = document.createElement('option');
+      option.value = exercise;
+      option.textContent = exercise;
+      historyFilter.appendChild(option);
+    });
+  }
 }
 
-addExerciseBtn.addEventListener('click', async () => {
+if (addExerciseBtn) addExerciseBtn.addEventListener('click', async () => {
   const name = newExerciseInput.value.trim();
 
   if (!name) {
@@ -399,7 +411,7 @@ addExerciseBtn.addEventListener('click', async () => {
   newExerciseInput.value = '';
 });
 
-newExerciseInput.addEventListener('keypress', (e) => {
+if (newExerciseInput) newExerciseInput.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') addExerciseBtn.click();
 });
 
@@ -450,7 +462,9 @@ function calculatePercentOfMax(currentOneRM, exercise) {
 }
 
 function renderHistory() {
-  const filter = historyFilter.value;
+  if (!historyList) return;
+
+  const filter = historyFilter ? historyFilter.value : 'all';
   const filteredLogs = filter === 'all'
     ? workoutLogs
     : workoutLogs.filter(log => log.exercise === filter);
@@ -480,4 +494,4 @@ function renderHistory() {
   }).join('');
 }
 
-historyFilter.addEventListener('change', renderHistory);
+if (historyFilter) historyFilter.addEventListener('change', renderHistory);

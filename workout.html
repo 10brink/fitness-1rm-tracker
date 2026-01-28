@@ -1,14 +1,13 @@
 <!--
-  Fitness 1RM Tracker - Single page app for tracking workout progress
-  Features: Google sign-in, 1RM calculator, workout logging, history display
-  Uses Firebase for auth and data sync across devices
+  Workout Log Page - Log workouts, manage exercises, view history
+  Separate page from the calculator for focused workout tracking
 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>1 Rep Max Tracker</title>
+  <title>Log Workout - 1RM Tracker</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,7 +17,7 @@
   <!-- Login Screen -->
   <div id="login-screen" class="login-screen">
     <div class="login-container">
-      <h1>One Rep Max Calculator</h1>
+      <h1>1 Rep Max Tracker</h1>
       <p>Track your lifts, calculate your max</p>
       <button id="google-signin-btn" class="google-signin-btn">
         <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
@@ -36,7 +35,7 @@
   <div id="app" class="app hidden">
     <!-- Header -->
     <header class="header">
-      <h1>One Rep Max Calculator</h1>
+      <h1>Log Workout</h1>
       <div class="user-info">
         <span id="user-name"></span>
         <button id="logout-btn" class="logout-btn">Logout</button>
@@ -45,36 +44,47 @@
 
     <main class="main-content">
       <!-- Navigation -->
-      <a href="workout.html" class="nav-link">Log Workout &rarr;</a>
+      <a href="index.html" class="nav-link">&larr; Back to Calculator</a>
 
-      <!-- 1RM Calculator Section -->
-      <section class="card calculator-section">
-        <h2>Calculate 1 Rep Max</h2>
-        <p class="section-description">Enter the weight and reps from a recent set to estimate your 1RM—the heaviest weight you could lift once with good form.</p>
-        <div class="calculator-inputs">
+      <!-- Log Workout Section -->
+      <section class="card log-section">
+        <h2>Log Workout</h2>
+        <div class="log-inputs">
           <div class="input-group">
-            <label for="calc-weight">Weight</label>
-            <div class="input-with-unit">
-              <input type="number" id="calc-weight" placeholder="225" min="0" step="0.5">
-              <span class="unit">lbs</span>
+            <label for="exercise-select">Exercise</label>
+            <select id="exercise-select">
+              <option value="">Select exercise...</option>
+            </select>
+          </div>
+          <div class="input-row input-row-3">
+            <div class="input-group">
+              <label for="log-sets">Sets</label>
+              <input type="number" id="log-sets" placeholder="3" min="1" max="20">
+            </div>
+            <div class="input-group">
+              <label for="log-weight">Weight</label>
+              <div class="input-with-unit">
+                <input type="number" id="log-weight" placeholder="225" min="0" step="0.5">
+                <span class="unit">lbs</span>
+              </div>
+            </div>
+            <div class="input-group">
+              <label for="log-reps">Reps</label>
+              <input type="number" id="log-reps" placeholder="5" min="1" max="100">
             </div>
           </div>
-          <div class="input-group">
-            <label for="calc-reps">Reps</label>
-            <input type="number" id="calc-reps" placeholder="5" min="1" max="30">
-          </div>
         </div>
-        <button id="calculate-btn" class="primary-btn">Calculate</button>
-        <div id="calc-result" class="calc-result hidden">
-          <div class="main-result">
-            <span class="result-label">Estimated 1 Rep Max</span>
-            <div>
-              <span class="result-value" id="result-value">0</span>
-              <span class="result-unit">lbs</span>
-            </div>
-          </div>
-          <div id="rep-maxes" class="rep-maxes"></div>
+        <button id="save-workout-btn" class="primary-btn">Save Workout</button>
+      </section>
+
+      <!-- Exercise Management Section -->
+      <section class="card exercises-section">
+        <h2>Manage Exercises</h2>
+        <div class="add-exercise">
+          <input type="text" id="new-exercise-input" placeholder="New exercise name...">
+          <button id="add-exercise-btn" class="secondary-btn">Add</button>
         </div>
+        <ul id="exercise-list" class="exercise-list"></ul>
       </section>
 
       <!-- History Section -->

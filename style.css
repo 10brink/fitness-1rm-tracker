@@ -11,17 +11,17 @@
 }
 
 :root {
-  --bg-primary: #1a1a2e;
-  --bg-secondary: #16213e;
-  --bg-card: #1f2937;
-  --accent: #e94560;
-  --accent-hover: #ff6b6b;
-  --text-primary: #f8f9fa;
-  --text-secondary: #9ca3af;
-  --text-muted: #6b7280;
-  --border: #374151;
-  --success: #10b981;
-  --danger: #ef4444;
+  --bg-primary: #0b0b0e;
+  --bg-secondary: #111114;
+  --bg-card: #18181b;
+  --accent: #f97316;
+  --accent-hover: #fb923c;
+  --text-primary: #fafafa;
+  --text-secondary: #d4d4d8;
+  --text-muted: #a1a1aa;
+  --border: #27272a;
+  --success: #84cc16;
+  --danger: #dc2626;
 }
 
 body {
@@ -140,6 +140,21 @@ body {
   border-color: var(--danger);
 }
 
+/* Navigation Link */
+.nav-link {
+  display: inline-block;
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  padding: 0.5rem 0;
+  transition: color 0.2s;
+}
+
+.nav-link:hover {
+  color: var(--accent-hover);
+}
+
 /* Cards */
 .card {
   background: var(--bg-card);
@@ -153,6 +168,13 @@ body {
   font-weight: 600;
   margin-bottom: 1rem;
   color: var(--text-primary);
+}
+
+.section-description {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
 }
 
 /* Input Groups */
@@ -321,6 +343,13 @@ body {
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--text-primary);
+}
+
+.rep-max-item .rep-percent {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 0.125rem;
 }
 
 /* Exercise Management */
