@@ -187,6 +187,25 @@ function calculateOneRM(weight, reps) {
   }
 }
 
+// Calculate weight for a given number of reps from a 1RM
+function calculateWeightFromOneRM(oneRM, reps) {
+  if (reps === 1) {
+    return oneRM;
+  } else if (reps <= 5) {
+    // Inverse Epley: weight = 1RM / (1 + reps/30)
+    return oneRM / (1 + reps / 30);
+  } else if (reps <= 10) {
+    // Inverse Brzycki: weight = 1RM × (37 - reps) / 36
+    return oneRM * (37 - reps) / 36;
+  } else if (reps <= 15) {
+    // Inverse Lombardi: weight = 1RM / (reps ^ 0.10)
+    return oneRM / Math.pow(reps, 0.10);
+  } else {
+    // Inverse Mayhew: weight = 1RM × (52.2 + 41.9 × e^(-0.055 × reps)) / 100
+    return oneRM * (52.2 + 41.9 * Math.exp(-0.055 * reps)) / 100;
+  }
+}
+
 calculateBtn.addEventListener('click', () => {
   const weight = parseFloat(calcWeight.value);
   const reps = parseInt(calcReps.value);
@@ -203,6 +222,20 @@ calculateBtn.addEventListener('click', () => {
 
   const oneRM = calculateOneRM(weight, reps);
   resultValue.textContent = oneRM.toFixed(1);
+
+  // Calculate and display multiple rep maxes
+  const repCounts = [2, 4, 6, 8, 10, 15];
+  const repMaxesContainer = document.getElementById('rep-maxes');
+  repMaxesContainer.innerHTML = repCounts.map(repCount => {
+    const repWeight = calculateWeightFromOneRM(oneRM, repCount);
+    return `
+      <div class="rep-max-item">
+        <span class="rep-count">${repCount} Rep Max</span>
+        <span class="rep-weight">${repWeight.toFixed(1)} lbs</span>
+      </div>
+    `;
+  }).join('');
+
   calcResult.classList.remove('hidden');
 });
 

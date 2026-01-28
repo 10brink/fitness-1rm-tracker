@@ -273,6 +273,10 @@ body {
   text-align: center;
 }
 
+.calc-result .main-result {
+  margin-bottom: 1.5rem;
+}
+
 .calc-result .result-label {
   display: block;
   font-size: 0.875rem;
@@ -290,6 +294,33 @@ body {
   font-size: 1.25rem;
   color: var(--text-secondary);
   margin-left: 0.25rem;
+}
+
+.rep-maxes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.rep-max-item {
+  padding: 0.75rem;
+  background: var(--bg-primary);
+  border-radius: 6px;
+}
+
+.rep-max-item .rep-count {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.rep-max-item .rep-weight {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 /* Exercise Management */
@@ -462,6 +493,10 @@ body {
 
   .calculator-inputs {
     grid-template-columns: 1fr;
+  }
+
+  .rep-maxes {
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .input-row {
