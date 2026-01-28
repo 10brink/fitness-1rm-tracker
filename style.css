@@ -11,17 +11,17 @@
 }
 
 :root {
-  --bg-primary: #0b0b0e;
-  --bg-secondary: #111114;
-  --bg-card: #18181b;
-  --accent: #f97316;
-  --accent-hover: #fb923c;
-  --text-primary: #fafafa;
-  --text-secondary: #d4d4d8;
-  --text-muted: #a1a1aa;
-  --border: #27272a;
-  --success: #84cc16;
-  --danger: #dc2626;
+  --bg-primary: #0f1f17;
+  --bg-secondary: #162c22;
+  --bg-card: #1e3a2f;
+  --accent: #a7f3d0;
+  --accent-hover: #6ee7b7;
+  --text-primary: #fefce8;
+  --text-secondary: #d1fae5;
+  --text-muted: #9ca3af;
+  --border: #2f4f3f;
+  --success: #22c55e;
+  --danger: #ef4444;
 }
 
 body {
