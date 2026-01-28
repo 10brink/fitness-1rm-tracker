@@ -4,6 +4,35 @@
   Uses rep-optimized formulas: Epley (1-5), Brzycki (6-10), Lombardi (11-15), Mayhew (16-20)
 */
 
+// ============================================
+// Theme Toggle
+// ============================================
+
+const themeToggle = document.getElementById('theme-toggle');
+
+function getPreferredTheme() {
+  const stored = localStorage.getItem('theme');
+  if (stored) return stored;
+  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+}
+
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('theme', theme);
+}
+
+// Initialize theme
+setTheme(getPreferredTheme());
+
+// Toggle on click
+if (themeToggle) {
+  themeToggle.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'light' ? 'dark' : 'light';
+    setTheme(next);
+  });
+}
+
 // Firebase configuration - Replace with your own config from Firebase Console
 const firebaseConfig = {
   apiKey: "AIzaSyAD6K8R7YfSYwZ99ex3UdZQ0e-HNWc9TqQ",
@@ -35,10 +64,16 @@ const resultValue = document.getElementById('result-value');
 
 // Workout logging elements (workout.html only)
 const exerciseSelect = document.getElementById('exercise-select');
+const logDate = document.getElementById('log-date');
 const logSets = document.getElementById('log-sets');
 const logWeight = document.getElementById('log-weight');
 const logReps = document.getElementById('log-reps');
 const saveWorkoutBtn = document.getElementById('save-workout-btn');
+const cancelEditBtn = document.getElementById('cancel-edit-btn');
+const logSectionTitle = document.getElementById('log-section-title');
+
+// Track edit mode
+let editingLogId = null;
 
 // Exercise management elements (workout.html only)
 const newExerciseInput = document.getElementById('new-exercise-input');
@@ -257,8 +292,14 @@ if (calcReps) calcReps.addEventListener('keypress', (e) => {
 // Workout Logging
 // ============================================
 
+// Initialize date input to today
+if (logDate) {
+  logDate.value = new Date().toISOString().split('T')[0];
+}
+
 if (saveWorkoutBtn) saveWorkoutBtn.addEventListener('click', async () => {
   const exercise = exerciseSelect.value;
+  const dateValue = logDate.value;
   const sets = parseInt(logSets.value) || 1;
   const weight = parseFloat(logWeight.value);
   const reps = parseInt(logReps.value);
@@ -279,48 +320,91 @@ if (saveWorkoutBtn) saveWorkoutBtn.addEventListener('click', async () => {
   }
 
   const calculatedOneRM = calculateOneRM(weight, reps);
+  const selectedDate = dateValue ? new Date(dateValue + 'T12:00:00') : new Date();
 
   try {
-    const logRef = await db
-      .collection('users')
-      .doc(currentUser.uid)
-      .collection('logs')
-      .add({
+    if (editingLogId) {
+      // Update existing log
+      await db
+        .collection('users')
+        .doc(currentUser.uid)
+        .collection('logs')
+        .doc(editingLogId)
+        .update({
+          exercise,
+          sets,
+          weight,
+          reps,
+          calculatedOneRM,
+          date: firebase.firestore.Timestamp.fromDate(selectedDate)
+        });
+
+      // Update local state
+      const logIndex = workoutLogs.findIndex(log => log.id === editingLogId);
+      if (logIndex !== -1) {
+        workoutLogs[logIndex] = {
+          ...workoutLogs[logIndex],
+          exercise,
+          sets,
+          weight,
+          reps,
+          calculatedOneRM,
+          date: selectedDate
+        };
+      }
+
+      // Exit edit mode
+      exitEditMode();
+
+      // Show brief success feedback
+      saveWorkoutBtn.textContent = 'Updated!';
+    } else {
+      // Create new log
+      const logRef = await db
+        .collection('users')
+        .doc(currentUser.uid)
+        .collection('logs')
+        .add({
+          exercise,
+          sets,
+          weight,
+          reps,
+          calculatedOneRM,
+          date: firebase.firestore.Timestamp.fromDate(selectedDate)
+        });
+
+      // Add to local state
+      const newLog = {
+        id: logRef.id,
         exercise,
         sets,
         weight,
         reps,
         calculatedOneRM,
-        date: firebase.firestore.FieldValue.serverTimestamp()
-      });
+        date: selectedDate
+      };
 
-    // Add to local state
-    const newLog = {
-      id: logRef.id,
-      exercise,
-      sets,
-      weight,
-      reps,
-      calculatedOneRM,
-      date: new Date()
-    };
+      workoutLogs.unshift(newLog);
 
-    workoutLogs.unshift(newLog);
-
-    // Update best 1RM if needed
-    if (!bestOneRMs[exercise] || calculatedOneRM > bestOneRMs[exercise]) {
-      bestOneRMs[exercise] = calculatedOneRM;
+      // Show brief success feedback
+      saveWorkoutBtn.textContent = 'Saved!';
     }
 
+    // Recalculate best 1RMs and re-sort
+    workoutLogs.sort((a, b) => {
+      const dateA = a.date?.toDate ? a.date.toDate() : a.date;
+      const dateB = b.date?.toDate ? b.date.toDate() : b.date;
+      return dateB - dateA;
+    });
+    calculateBestOneRMs();
     renderHistory();
 
     // Clear inputs
     logSets.value = '';
     logWeight.value = '';
     logReps.value = '';
+    logDate.value = new Date().toISOString().split('T')[0];
 
-    // Show brief success feedback
-    saveWorkoutBtn.textContent = 'Saved!';
     setTimeout(() => {
       saveWorkoutBtn.textContent = 'Save Workout';
     }, 1500);
@@ -329,6 +413,81 @@ if (saveWorkoutBtn) saveWorkoutBtn.addEventListener('click', async () => {
     alert('Failed to save workout. Please try again.');
   }
 });
+
+// Edit mode functions
+function enterEditMode(logId) {
+  const log = workoutLogs.find(l => l.id === logId);
+  if (!log) return;
+
+  editingLogId = logId;
+
+  // Populate form with log data
+  exerciseSelect.value = log.exercise;
+  logSets.value = log.sets || 1;
+  logWeight.value = log.weight;
+  logReps.value = log.reps;
+
+  // Set date
+  const logDateObj = log.date?.toDate ? log.date.toDate() : log.date;
+  if (logDateObj) {
+    logDate.value = logDateObj.toISOString().split('T')[0];
+  }
+
+  // Update UI
+  if (logSectionTitle) logSectionTitle.textContent = 'Edit Workout';
+  if (saveWorkoutBtn) saveWorkoutBtn.textContent = 'Update Workout';
+  if (cancelEditBtn) cancelEditBtn.classList.remove('hidden');
+
+  // Scroll to form
+  document.querySelector('.log-section')?.scrollIntoView({ behavior: 'smooth' });
+}
+
+function exitEditMode() {
+  editingLogId = null;
+
+  // Reset UI
+  if (logSectionTitle) logSectionTitle.textContent = 'Log Workout';
+  if (saveWorkoutBtn) saveWorkoutBtn.textContent = 'Save Workout';
+  if (cancelEditBtn) cancelEditBtn.classList.add('hidden');
+
+  // Clear form
+  if (exerciseSelect) exerciseSelect.value = '';
+  if (logSets) logSets.value = '';
+  if (logWeight) logWeight.value = '';
+  if (logReps) logReps.value = '';
+  if (logDate) logDate.value = new Date().toISOString().split('T')[0];
+}
+
+if (cancelEditBtn) cancelEditBtn.addEventListener('click', exitEditMode);
+
+// Delete log function
+async function deleteLog(logId) {
+  if (!confirm('Delete this workout entry?')) return;
+
+  try {
+    await db
+      .collection('users')
+      .doc(currentUser.uid)
+      .collection('logs')
+      .doc(logId)
+      .delete();
+
+    // Remove from local state
+    workoutLogs = workoutLogs.filter(log => log.id !== logId);
+
+    // Recalculate best 1RMs
+    calculateBestOneRMs();
+    renderHistory();
+
+    // Exit edit mode if we were editing this log
+    if (editingLogId === logId) {
+      exitEditMode();
+    }
+  } catch (error) {
+    console.error('Error deleting workout:', error);
+    alert('Failed to delete workout. Please try again.');
+  }
+}
 
 // ============================================
 // Exercise Management
@@ -474,6 +633,9 @@ function renderHistory() {
     return;
   }
 
+  // Check if we're on the workout page (has edit capability)
+  const canEdit = !!document.getElementById('log-section-title');
+
   historyList.innerHTML = filteredLogs.map(log => {
     const percentOfMax = calculatePercentOfMax(log.calculatedOneRM, log.exercise);
     const isPR = log.calculatedOneRM === bestOneRMs[log.exercise];
@@ -484,6 +646,12 @@ function renderHistory() {
           <span class="exercise-name">${log.exercise}${isPR ? ' 🏆' : ''}</span>
           <span class="workout-details">${log.sets || 1}×${log.reps} @ ${log.weight} lbs</span>
           <span class="date">${formatDate(log.date)}</span>
+          ${canEdit ? `
+            <div>
+              <button class="edit-btn" data-id="${log.id}">Edit</button>
+              <button class="delete-log-btn" data-id="${log.id}">Delete</button>
+            </div>
+          ` : ''}
         </div>
         <div class="stats">
           <span class="one-rm">${log.calculatedOneRM.toFixed(1)} lbs</span>
@@ -492,6 +660,16 @@ function renderHistory() {
       </div>
     `;
   }).join('');
+
+  // Add event listeners for edit/delete buttons
+  if (canEdit) {
+    historyList.querySelectorAll('.edit-btn').forEach(btn => {
+      btn.addEventListener('click', () => enterEditMode(btn.dataset.id));
+    });
+    historyList.querySelectorAll('.delete-log-btn').forEach(btn => {
+      btn.addEventListener('click', () => deleteLog(btn.dataset.id));
+    });
+  }
 }
 
 if (historyFilter) historyFilter.addEventListener('change', renderHistory);

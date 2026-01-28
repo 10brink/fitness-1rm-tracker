@@ -14,6 +14,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+  <!-- Theme Toggle -->
+  <button class="theme-toggle" id="theme-toggle" title="Toggle theme">
+    <svg class="icon-sun" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 3V1m0 22v-2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42M12 6a6 6 0 100 12 6 6 0 000-12z"/>
+    </svg>
+    <svg class="icon-moon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+    </svg>
+  </button>
+
   <!-- Login Screen -->
   <div id="login-screen" class="login-screen">
     <div class="login-container">
@@ -48,13 +58,19 @@
 
       <!-- Log Workout Section -->
       <section class="card log-section">
-        <h2>Log Workout</h2>
+        <h2 id="log-section-title">Log Workout</h2>
         <div class="log-inputs">
-          <div class="input-group">
-            <label for="exercise-select">Exercise</label>
-            <select id="exercise-select">
-              <option value="">Select exercise...</option>
-            </select>
+          <div class="input-row input-row-2">
+            <div class="input-group">
+              <label for="exercise-select">Exercise</label>
+              <select id="exercise-select">
+                <option value="">Select exercise...</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label for="log-date">Date</label>
+              <input type="date" id="log-date">
+            </div>
           </div>
           <div class="input-row input-row-3">
             <div class="input-group">
@@ -74,7 +90,10 @@
             </div>
           </div>
         </div>
-        <button id="save-workout-btn" class="primary-btn">Save Workout</button>
+        <div class="log-actions">
+          <button id="save-workout-btn" class="primary-btn">Save Workout</button>
+          <button id="cancel-edit-btn" class="secondary-btn hidden">Cancel</button>
+        </div>
       </section>
 
       <!-- Exercise Management Section -->
