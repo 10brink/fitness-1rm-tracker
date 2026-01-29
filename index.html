@@ -73,6 +73,15 @@
             <label for="calc-reps">Reps</label>
             <input type="number" id="calc-reps" placeholder="5" min="1" max="30">
           </div>
+          <div class="input-group">
+            <label for="calc-category">Exercise Type</label>
+            <select id="calc-category">
+              <option value="squat">Squat/Deadlift</option>
+              <option value="bench">Bench/OHP</option>
+              <option value="isolation">Isolation Movements</option>
+              <option value="explosive">Explosive (Cleans)</option>
+            </select>
+          </div>
         </div>
         <button id="calculate-btn" class="primary-btn">Calculate</button>
         <div id="calc-result" class="calc-result hidden">
@@ -82,6 +91,10 @@
               <span class="result-value" id="result-value">0</span>
               <span class="result-unit">lbs</span>
             </div>
+          </div>
+          <div class="formula-used">
+            <span class="formula-label">Formula</span>
+            <span class="formula-value" id="formula-value">—</span>
           </div>
           <div id="rep-maxes" class="rep-maxes"></div>
         </div>

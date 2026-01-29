@@ -58,9 +58,11 @@ const userName = document.getElementById('user-name');
 // Calculator elements (index.html only)
 const calcWeight = document.getElementById('calc-weight');
 const calcReps = document.getElementById('calc-reps');
+const calcCategory = document.getElementById('calc-category');
 const calculateBtn = document.getElementById('calculate-btn');
 const calcResult = document.getElementById('calc-result');
 const resultValue = document.getElementById('result-value');
+const formulaValue = document.getElementById('formula-value');
 
 // Workout logging elements (workout.html only)
 const exerciseSelect = document.getElementById('exercise-select');
@@ -226,23 +228,60 @@ function calculateOneRM(weight, reps) {
   }
 }
 
+function getFormulaKeyForReps(reps) {
+  if (reps <= 5) return 'epley';
+  if (reps <= 10) return 'brzycki';
+  if (reps <= 15) return 'lombardi';
+  return 'mayhew';
+}
+
+function getFormulaKeyForCategory(category, reps) {
+  if (category === 'explosive') return 'lombardi';
+  if (category === 'isolation') return 'mayhew';
+  if (category === 'bench') return 'mayhew';
+
+  if (reps >= 12) return 'epley';
+  if (reps >= 4 && reps <= 8) return 'brzycki';
+  if (reps > 8 && reps <= 12) return 'epley';
+
+  return 'epley';
+}
+
+function getFormulaLabel(formulaKey) {
+  if (formulaKey === 'epley') return 'Epley';
+  if (formulaKey === 'brzycki') return 'Brzycki';
+  if (formulaKey === 'lombardi') return 'Lombardi';
+  return 'Mayhew';
+}
+
+function calculateOneRMWithFormula(weight, reps, category) {
+  let cappedReps = reps > 20 ? 20 : reps;
+  const formulaKey = category ? getFormulaKeyForCategory(category, cappedReps) : getFormulaKeyForReps(cappedReps);
+  if (category === 'explosive' && cappedReps > 10) cappedReps = 10;
+  return { oneRM: calculateOneRM(weight, cappedReps), formulaKey, cappedReps };
+}
+
 // Calculate weight for a given number of reps from a 1RM
-function calculateWeightFromOneRM(oneRM, reps) {
+// If formulaKey is provided, use that formula for all reps to keep the curve consistent.
+function calculateWeightFromOneRM(oneRM, reps, formulaKey) {
+  const key = formulaKey || getFormulaKeyForReps(reps);
   if (reps === 1) {
     return oneRM;
-  } else if (reps <= 5) {
+  }
+  if (key === 'epley') {
     // Inverse Epley: weight = 1RM / (1 + reps/30)
     return oneRM / (1 + reps / 30);
-  } else if (reps <= 10) {
+  }
+  if (key === 'brzycki') {
     // Inverse Brzycki: weight = 1RM × (37 - reps) / 36
     return oneRM * (37 - reps) / 36;
-  } else if (reps <= 15) {
+  }
+  if (key === 'lombardi') {
     // Inverse Lombardi: weight = 1RM / (reps ^ 0.10)
     return oneRM / Math.pow(reps, 0.10);
-  } else {
-    // Inverse Mayhew: weight = 1RM × (52.2 + 41.9 × e^(-0.055 × reps)) / 100
-    return oneRM * (52.2 + 41.9 * Math.exp(-0.055 * reps)) / 100;
   }
+  // Inverse Mayhew: weight = 1RM × (52.2 + 41.9 × e^(-0.055 × reps)) / 100
+  return oneRM * (52.2 + 41.9 * Math.exp(-0.055 * reps)) / 100;
 }
 
 if (calculateBtn) calculateBtn.addEventListener('click', () => {
@@ -259,14 +298,20 @@ if (calculateBtn) calculateBtn.addEventListener('click', () => {
     return;
   }
 
-  const oneRM = calculateOneRM(weight, reps);
+  const { oneRM, formulaKey, cappedReps } = calculateOneRMWithFormula(weight, reps, calcCategory ? calcCategory.value : null);
   resultValue.textContent = oneRM.toFixed(1);
+  if (formulaValue) {
+    formulaValue.textContent = `${getFormulaLabel(formulaKey)}${cappedReps !== reps ? ` (capped at ${cappedReps} reps)` : ''}`;
+  }
 
   // Calculate and display multiple rep maxes
-  const repCounts = [2, 4, 6, 8, 10, 15];
+  let repCounts = [2, 4, 6, 8, 10, 15];
+  if (calcCategory && calcCategory.value === 'explosive') {
+    repCounts = repCounts.filter(repCount => repCount <= 10);
+  }
   const repMaxesContainer = document.getElementById('rep-maxes');
   repMaxesContainer.innerHTML = repCounts.map(repCount => {
-    const repWeight = calculateWeightFromOneRM(oneRM, repCount);
+    const repWeight = calculateWeightFromOneRM(oneRM, repCount, formulaKey);
     const percentage = (repWeight / oneRM) * 100;
     return `
       <div class="rep-max-item">
