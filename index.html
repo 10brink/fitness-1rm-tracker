@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <!-- Theme Toggle -->
@@ -71,16 +71,16 @@
           </div>
           <div class="input-group">
             <label for="calc-reps">Reps</label>
-            <input type="number" id="calc-reps" placeholder="5" min="1" max="30">
+            <input type="number" id="calc-reps" placeholder="5" min="1" max="25">
           </div>
           <div class="input-group">
             <label for="calc-category">Exercise Type</label>
             <select id="calc-category">
-              <option value="squat">Squat/Deadlift</option>
-              <option value="bench">Bench/OHP</option>
-              <option value="isolation">Isolation Movements</option>
-              <option value="explosive">Explosive (Cleans)</option>
+              <option value="compound">Compound Barbell Lifts</option>
+              <option value="dumbbell">Dumbbell Compounds</option>
+              <option value="machine">Machines &amp; Smith</option>
             </select>
+            <div class="field-hint">Examples: Squat, bench, deadlift, OHP, row | DB bench, goblet squat, lunges | Leg press, Smith press, chest press</div>
           </div>
         </div>
         <button id="calculate-btn" class="primary-btn">Calculate</button>

@@ -1,53 +1,59 @@
-# Fitness 1RM Tracker
+# 1 Rep Max Tracker
 
-A simple web app for tracking your lifts and calculating your one-rep max. Log workouts at the gym, sync across devices, and track your progress over time.
+A fitness tracking app for calculating one-rep max (1RM) and logging workouts. Syncs data across devices with Google authentication.
 
 ## Features
 
-- **1RM Calculator** - Enter weight and reps to get your estimated one-rep max
-- **Multiple Rep Maxes** - See estimated weights for 2, 4, 6, 8, 10, and 15 rep maxes
-- **Workout Logging** - Track sets, reps, and weight for each exercise
-- **PR Detection** - Automatically highlights personal records
-- **Cloud Sync** - Sign in with Google, access your data from any device
-- **Mobile-First** - Designed for quick logging between sets
+- **1RM Calculator** - Estimate your one-rep max from any set using rep-optimized formulas
+- **Workout Logging** - Track exercises with sets, reps, weight, and date
+- **Exercise Management** - Add custom exercises or use defaults (Squat, Bench Press, Deadlift, etc.)
+- **Workout History** - View past workouts with PR indicators and percentage of max
+- **Cloud Sync** - Data persists across devices via Firebase
+- **Light/Dark Theme** - Toggle between themes with system preference detection
 
 ## 1RM Formulas
 
-Uses rep-optimized formulas for more accurate estimates:
+The calculator uses different formulas optimized for specific rep ranges:
 
-| Reps | Formula |
-|------|---------|
-| 1-5 | Epley |
-| 6-10 | Brzycki |
-| 11-15 | Lombardi |
-| 16-20 | Mayhew |
+| Rep Range | Formula | Best For |
+|-----------|---------|----------|
+| 1-5 reps | Epley | Heavy compound lifts |
+| 6-10 reps | Brzycki | Moderate rep ranges |
+| 11-15 reps | Lombardi | Higher rep sets |
+| 16-20 reps | Mayhew | Endurance sets |
+
+Exercise type (compound, dumbbell, machine) also influences formula selection for better accuracy.
 
 ## Tech Stack
 
-- Vanilla HTML, CSS, JavaScript (no frameworks)
-- Firebase Authentication (Google sign-in)
+- Vanilla HTML, CSS, JavaScript
+- Firebase Authentication (Google Sign-In)
 - Cloud Firestore (database)
+- Google Fonts (Inter)
+
+## Project Structure
+
+```
+fitness/
+├── index.html      # Main page with 1RM calculator and history
+├── workout.html    # Workout logging and exercise management
+├── app.js          # Core application logic
+└── style.css       # Styling with theme support
+```
 
 ## Setup
 
-1. Create a Firebase project at [console.firebase.google.com](https://console.firebase.google.com)
-2. Enable Google Authentication
-3. Create a Firestore database
-4. Add your Firebase config to `app.js`
-5. Deploy to any static hosting (GitHub Pages, Netlify, etc.)
+1. Clone the repository
+2. Replace Firebase config in `app.js` with your own project credentials
+3. Enable Google Authentication in Firebase Console
+4. Serve the files (any static file server works)
 
-### Firestore Security Rules
+## Usage
 
-```
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /users/{userId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-  }
-}
-```
+1. Sign in with Google
+2. Use the calculator to estimate 1RM from any recent set
+3. Log workouts on the workout page
+4. Track progress over time with workout history
 
 ## License
 

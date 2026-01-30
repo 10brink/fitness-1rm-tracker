@@ -208,8 +208,8 @@ function calculateBestOneRMs() {
 
 function calculateOneRM(weight, reps) {
   // Different formulas optimized for different rep ranges
-  // Cap reps at 20 for high-rep sets
-  if (reps > 20) reps = 20;
+  // Cap reps at 25 for high-rep sets
+  if (reps > 25) reps = 25;
 
   if (reps === 1) {
     return weight;
@@ -235,30 +235,103 @@ function getFormulaKeyForReps(reps) {
   return 'mayhew';
 }
 
-function getFormulaKeyForCategory(category, reps) {
-  if (category === 'explosive') return 'lombardi';
-  if (category === 'isolation') return 'mayhew';
-  if (category === 'bench') return 'mayhew';
+const COMPOUND_PATTERNS = [
+  /squat/,
+  /bench/,
+  /deadlift/,
+  /overhead press/,
+  /\bohp\b/,
+  /barbell row/,
+  /\brow\b/
+];
+const DUMBBELL_PATTERNS = [
+  /\bdb\b/,
+  /dumbbell/,
+  /db bench/,
+  /db incline/,
+  /incline dumbbell/,
+  /goblet squat/,
+  /lunges?/
+];
+const MACHINE_PATTERNS = [
+  /leg press/,
+  /hack squat/,
+  /smith/,
+  /chest press/
+];
 
-  if (reps >= 12) return 'epley';
-  if (reps >= 4 && reps <= 8) return 'brzycki';
-  if (reps > 8 && reps <= 12) return 'epley';
+function matchesAny(value, patterns) {
+  return patterns.some(pattern => pattern.test(value));
+}
 
-  return 'epley';
+function normalizeExerciseName(name) {
+  return name.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function getCategoryForExerciseName(name) {
+  const normalized = normalizeExerciseName(name);
+  if (matchesAny(normalized, MACHINE_PATTERNS)) return 'machine';
+  if (matchesAny(normalized, DUMBBELL_PATTERNS)) return 'dumbbell';
+  if (matchesAny(normalized, COMPOUND_PATTERNS)) return 'compound';
+  return 'compound';
+}
+
+function getCategoryFormula(category, reps) {
+  if (reps <= 3) return { oneRMKey: 'none', repMaxKey: 'epley', label: 'Treat as 1RM' };
+
+  if (category === 'compound') {
+    if (reps <= 10) return { oneRMKey: 'epley', repMaxKey: 'epley', label: 'Epley' };
+    if (reps <= 20) return { oneRMKey: 'mayhew', repMaxKey: 'mayhew', label: 'Mayhew' };
+    return { oneRMKey: 'brzycki', repMaxKey: 'brzycki', label: 'Brzycki' };
+  }
+
+  if (category === 'dumbbell') {
+    if (reps <= 8) return { oneRMKey: 'epley', repMaxKey: 'epley', label: 'Epley' };
+    if (reps <= 20) return { oneRMKey: 'mayhew', repMaxKey: 'mayhew', label: 'Mayhew' };
+    return { oneRMKey: 'brzycki', repMaxKey: 'brzycki', label: 'Brzycki' };
+  }
+
+  if (category === 'machine') {
+    if (reps <= 10) return { oneRMKey: 'brzycki', repMaxKey: 'brzycki', label: 'Brzycki' };
+    if (reps <= 15) return { oneRMKey: 'mayhew', repMaxKey: 'mayhew', label: 'Mayhew' };
+    return { oneRMKey: 'brzycki', repMaxKey: 'brzycki', label: 'Brzycki' };
+  }
+
+  return { oneRMKey: 'epley', repMaxKey: 'epley', label: 'Epley' };
+}
+
+function calculateOneRMByKey(weight, reps, key) {
+  if (reps === 1 || key === 'none') return weight;
+  if (key === 'epley') return weight * (1 + reps / 30);
+  if (key === 'brzycki') return weight * (36 / (37 - reps));
+  if (key === 'lombardi') return weight * Math.pow(reps, 0.10);
+  return (100 * weight) / (52.2 + 41.9 * Math.exp(-0.055 * reps));
+}
+
+function calculateOneRMWithFormula(weight, reps, category) {
+  const cappedReps = reps > 25 ? 25 : reps;
+  if (!category && cappedReps <= 3) {
+    return {
+      oneRM: weight,
+      oneRMKey: 'none',
+      repMaxKey: 'epley',
+      formulaLabel: 'Treat as 1RM',
+      cappedReps
+    };
+  }
+  const { oneRMKey, repMaxKey, label } = category
+    ? getCategoryFormula(category, cappedReps)
+    : { oneRMKey: getFormulaKeyForReps(cappedReps), repMaxKey: getFormulaKeyForReps(cappedReps), label: null };
+  const oneRM = calculateOneRMByKey(weight, cappedReps, oneRMKey);
+  return { oneRM, oneRMKey, repMaxKey, formulaLabel: label || getFormulaLabel(oneRMKey), cappedReps };
 }
 
 function getFormulaLabel(formulaKey) {
   if (formulaKey === 'epley') return 'Epley';
   if (formulaKey === 'brzycki') return 'Brzycki';
   if (formulaKey === 'lombardi') return 'Lombardi';
-  return 'Mayhew';
-}
-
-function calculateOneRMWithFormula(weight, reps, category) {
-  let cappedReps = reps > 20 ? 20 : reps;
-  const formulaKey = category ? getFormulaKeyForCategory(category, cappedReps) : getFormulaKeyForReps(cappedReps);
-  if (category === 'explosive' && cappedReps > 10) cappedReps = 10;
-  return { oneRM: calculateOneRM(weight, cappedReps), formulaKey, cappedReps };
+  if (formulaKey === 'mayhew') return 'Mayhew';
+  return 'None';
 }
 
 // Calculate weight for a given number of reps from a 1RM
@@ -298,20 +371,17 @@ if (calculateBtn) calculateBtn.addEventListener('click', () => {
     return;
   }
 
-  const { oneRM, formulaKey, cappedReps } = calculateOneRMWithFormula(weight, reps, calcCategory ? calcCategory.value : null);
+  const { oneRM, repMaxKey, formulaLabel, cappedReps } = calculateOneRMWithFormula(weight, reps, calcCategory ? calcCategory.value : null);
   resultValue.textContent = oneRM.toFixed(1);
   if (formulaValue) {
-    formulaValue.textContent = `${getFormulaLabel(formulaKey)}${cappedReps !== reps ? ` (capped at ${cappedReps} reps)` : ''}`;
+    formulaValue.textContent = `${formulaLabel}${cappedReps !== reps ? ` (capped at ${cappedReps} reps)` : ''}`;
   }
 
   // Calculate and display multiple rep maxes
-  let repCounts = [2, 4, 6, 8, 10, 15];
-  if (calcCategory && calcCategory.value === 'explosive') {
-    repCounts = repCounts.filter(repCount => repCount <= 10);
-  }
+  let repCounts = [5, 10, 15, 20, 25];
   const repMaxesContainer = document.getElementById('rep-maxes');
   repMaxesContainer.innerHTML = repCounts.map(repCount => {
-    const repWeight = calculateWeightFromOneRM(oneRM, repCount, formulaKey);
+    const repWeight = calculateWeightFromOneRM(oneRM, repCount, repMaxKey);
     const percentage = (repWeight / oneRM) * 100;
     return `
       <div class="rep-max-item">
@@ -364,7 +434,8 @@ if (saveWorkoutBtn) saveWorkoutBtn.addEventListener('click', async () => {
     return;
   }
 
-  const calculatedOneRM = calculateOneRM(weight, reps);
+  const category = getCategoryForExerciseName(exercise);
+  const { oneRM: calculatedOneRM } = calculateOneRMWithFormula(weight, reps, category);
   const selectedDate = dateValue ? new Date(dateValue + 'T12:00:00') : new Date();
 
   try {
@@ -554,20 +625,27 @@ function renderExercises() {
   if (!exerciseList) return;
 
   exerciseList.innerHTML = '';
+  const fragment = document.createDocumentFragment();
 
   userExercises.forEach(exercise => {
     const li = document.createElement('li');
-    li.innerHTML = `
-      <span class="exercise-name">${exercise}</span>
-      <button class="delete-btn" data-exercise="${exercise}" title="Delete exercise">&times;</button>
-    `;
-    exerciseList.appendChild(li);
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'exercise-name';
+    nameSpan.textContent = exercise;
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'delete-btn';
+    deleteBtn.type = 'button';
+    deleteBtn.title = 'Delete exercise';
+    deleteBtn.textContent = '×';
+    deleteBtn.addEventListener('click', () => removeExercise(exercise));
+
+    li.appendChild(nameSpan);
+    li.appendChild(deleteBtn);
+    fragment.appendChild(li);
   });
 
-  // Add delete event listeners
-  exerciseList.querySelectorAll('.delete-btn').forEach(btn => {
-    btn.addEventListener('click', () => removeExercise(btn.dataset.exercise));
-  });
+  exerciseList.appendChild(fragment);
 }
 
 function updateExerciseDropdowns() {
@@ -681,40 +759,76 @@ function renderHistory() {
   // Check if we're on the workout page (has edit capability)
   const canEdit = !!document.getElementById('log-section-title');
 
-  historyList.innerHTML = filteredLogs.map(log => {
+  historyList.innerHTML = '';
+  const fragment = document.createDocumentFragment();
+
+  filteredLogs.forEach(log => {
     const percentOfMax = calculatePercentOfMax(log.calculatedOneRM, log.exercise);
     const isPR = log.calculatedOneRM === bestOneRMs[log.exercise];
 
-    return `
-      <div class="history-item">
-        <div class="exercise-info">
-          <span class="exercise-name">${log.exercise}${isPR ? ' 🏆' : ''}</span>
-          <span class="workout-details">${log.sets || 1}×${log.reps} @ ${log.weight} lbs</span>
-          <span class="date">${formatDate(log.date)}</span>
-          ${canEdit ? `
-            <div>
-              <button class="edit-btn" data-id="${log.id}">Edit</button>
-              <button class="delete-log-btn" data-id="${log.id}">Delete</button>
-            </div>
-          ` : ''}
-        </div>
-        <div class="stats">
-          <span class="one-rm">${log.calculatedOneRM.toFixed(1)} lbs</span>
-          <span class="percent-max">${percentOfMax.toFixed(0)}% of PR</span>
-        </div>
-      </div>
-    `;
-  }).join('');
+    const item = document.createElement('div');
+    item.className = 'history-item';
 
-  // Add event listeners for edit/delete buttons
-  if (canEdit) {
-    historyList.querySelectorAll('.edit-btn').forEach(btn => {
-      btn.addEventListener('click', () => enterEditMode(btn.dataset.id));
-    });
-    historyList.querySelectorAll('.delete-log-btn').forEach(btn => {
-      btn.addEventListener('click', () => deleteLog(btn.dataset.id));
-    });
-  }
+    const info = document.createElement('div');
+    info.className = 'exercise-info';
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'exercise-name';
+    nameSpan.textContent = `${log.exercise}${isPR ? ' 🏆' : ''}`;
+
+    const detailsSpan = document.createElement('span');
+    detailsSpan.className = 'workout-details';
+    const sets = log.sets || 1;
+    detailsSpan.textContent = `${sets}×${log.reps} @ ${log.weight} lbs`;
+
+    const dateSpan = document.createElement('span');
+    dateSpan.className = 'date';
+    dateSpan.textContent = formatDate(log.date);
+
+    info.appendChild(nameSpan);
+    info.appendChild(detailsSpan);
+    info.appendChild(dateSpan);
+
+    if (canEdit) {
+      const actionWrap = document.createElement('div');
+
+      const editBtn = document.createElement('button');
+      editBtn.className = 'edit-btn';
+      editBtn.type = 'button';
+      editBtn.textContent = 'Edit';
+      editBtn.addEventListener('click', () => enterEditMode(log.id));
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'delete-log-btn';
+      deleteBtn.type = 'button';
+      deleteBtn.textContent = 'Delete';
+      deleteBtn.addEventListener('click', () => deleteLog(log.id));
+
+      actionWrap.appendChild(editBtn);
+      actionWrap.appendChild(deleteBtn);
+      info.appendChild(actionWrap);
+    }
+
+    const stats = document.createElement('div');
+    stats.className = 'stats';
+
+    const oneRmSpan = document.createElement('span');
+    oneRmSpan.className = 'one-rm';
+    oneRmSpan.textContent = `${log.calculatedOneRM.toFixed(1)} lbs`;
+
+    const percentSpan = document.createElement('span');
+    percentSpan.className = 'percent-max';
+    percentSpan.textContent = `${percentOfMax.toFixed(0)}% of PR`;
+
+    stats.appendChild(oneRmSpan);
+    stats.appendChild(percentSpan);
+
+    item.appendChild(info);
+    item.appendChild(stats);
+    fragment.appendChild(item);
+  });
+
+  historyList.appendChild(fragment);
 }
 
 if (historyFilter) historyFilter.addEventListener('change', renderHistory);
