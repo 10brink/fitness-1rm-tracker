@@ -82,7 +82,7 @@
 }
 
 body {
-  font-family: 'Space Grotesk', 'IBM Plex Sans', sans-serif;
+  font-family: 'Cascadia Code', 'Cascadia Mono', 'Segoe UI', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
   background: var(--bg-primary);
   color: var(--text-primary);
   min-height: 100vh;
