@@ -100,7 +100,7 @@ The app uses different formulas based on **both** rep range **and** exercise typ
 
 ### Rep Max Table
 
-After calculating 1RM, the app shows what you should lift for 5, 10, 15, 20, and 25 reps using the inverse of the selected formula. This keeps the curve consistent—no jarring jumps between formulas.
+After calculating 1RM, the app shows what you should lift for 4, 6, 8, 10, 12, 15, 20, and 25 reps using the inverse of the selected formula. For compound barbell lifts, it stops at 15 reps. This keeps the curve consistent—no jarring jumps between formulas.
 
 ## File Structure
 

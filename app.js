@@ -378,7 +378,10 @@ if (calculateBtn) calculateBtn.addEventListener('click', () => {
   }
 
   // Calculate and display multiple rep maxes
-  let repCounts = [5, 10, 15, 20, 25];
+  let repCounts = [4, 6, 8, 10, 12, 15, 20, 25];
+  if (calcCategory && calcCategory.value === 'compound') {
+    repCounts = [4, 6, 8, 10, 12, 15];
+  }
   const repMaxesContainer = document.getElementById('rep-maxes');
   repMaxesContainer.innerHTML = repCounts.map(repCount => {
     const repWeight = calculateWeightFromOneRM(oneRM, repCount, repMaxKey);

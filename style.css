@@ -82,7 +82,7 @@
 }
 
 body {
-  font-family: 'Cascadia Code', 'Cascadia Mono', 'Segoe UI', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+  font-family: 'Avenir Next', 'Avenir', 'Trebuchet MS', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
   background: var(--bg-primary);
   color: var(--text-primary);
   min-height: 100vh;
@@ -165,7 +165,7 @@ body {
 }
 
 .header h1 {
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   font-weight: 700;
   color: var(--accent);
 }
@@ -199,17 +199,23 @@ body {
 
 /* Navigation Link */
 .nav-link {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   color: var(--accent);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
   margin-bottom: 1rem;
-  padding: 0.5rem 0;
-  transition: color 0.2s;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
 }
 
 .nav-link:hover {
   color: var(--accent-hover);
+  border-color: var(--accent);
 }
 
 /* Cards */
@@ -289,7 +295,7 @@ body {
 }
 
 .card h2 {
-  font-size: 1.125rem;
+  font-size: 1.35rem;
   font-weight: 600;
   margin-bottom: 1rem;
   color: var(--text-primary);
@@ -297,7 +303,7 @@ body {
 
 .section-description {
   color: var(--text-secondary);
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   line-height: 1.6;
   margin-bottom: 1.25rem;
 }
@@ -489,14 +495,17 @@ body {
 }
 
 .rep-maxes {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 0.75rem;
   padding-top: 1rem;
   border-top: 1px solid var(--border);
 }
 
 .rep-max-item {
+  flex: 0 1 calc(33.333% - 0.75rem);
+  min-width: 150px;
   padding: 0.75rem;
   background: var(--bg-primary);
   border-radius: 6px;
@@ -730,7 +739,11 @@ body {
   }
 
   .rep-maxes {
-    grid-template-columns: repeat(2, 1fr);
+    justify-content: center;
+  }
+
+  .rep-max-item {
+    flex-basis: calc(50% - 0.75rem);
   }
 
   .input-row {
